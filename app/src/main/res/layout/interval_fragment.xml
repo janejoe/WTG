@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Выберите начало интервала для поиска концертов."
+        android:textSize="20dp"
+        android:typeface="serif"
+        android:textAlignment="center"
+        android:layout_marginTop="20dp"
+        android:id="@+id/startTimeTextView" />
+
+    <DatePicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/startDatePicker"
+        android:layout_gravity="center_horizontal"
+        android:calendarViewShown="false"
+        android:accessibilityLiveRegion="polite"
+        android:background="#283140a0"
+        android:clickable="true" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Выберите конец интервала для поиска концертов."
+        android:textSize="20dp"
+        android:typeface="serif"
+        android:textAlignment="center"
+        android:layout_marginTop="20dp"
+        android:id="@+id/endTimeTextView" />
+
+    <DatePicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/endDatePicker"
+        android:layout_gravity="center_horizontal"
+        android:calendarViewShown="false"
+        android:accessibilityLiveRegion="polite"
+        android:background="#283140a0"
+        android:clickable="true" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Начать поиск"
+        android:id="@+id/searchButton"
+        android:layout_marginTop="50dp"
+        android:background="#283140a0"
+        android:enabled="true" />
+
+
+</LinearLayout>
