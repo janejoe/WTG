@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">WTG</string>
     <string name="wtg">Where To Go?</string>
-
+    <integer name="com_vk_sdk_AppId">5142452</integer>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
