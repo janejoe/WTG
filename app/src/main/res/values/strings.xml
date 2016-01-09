@@ -5,6 +5,9 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
+    <string name="progress_audio">Сканирую аудио</string>
+    <string name="progress_concert">Ищу концерты</string>
+
     <string-array name="number_of_audio">
         <item>100</item>
         <item>200</item>

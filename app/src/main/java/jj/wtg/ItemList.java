@@ -24,7 +24,9 @@ public class ItemList  extends Fragment{
 
     private static final String TITLE = "title";
     private static final String DESCRIPTION = "description";
-    private ArrayList<HashMap<String,String>> myList;
+    ArrayList<HashMap<String,String>> myList;
+    HashMap<String, String>  hm;
+    IntervalForSearching intervalForSearching;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,14 +35,16 @@ public class ItemList  extends Fragment{
         ListView lv = (ListView)v.findViewById(R.id.concertListView);
 
         myList = new ArrayList<>();
+        hm = new HashMap<>();
 
+       // System.out.println(IntervalForSearching.resultData);
 
-        for(int i = 0; i < 30; i++){
-            HashMap<String, String>  hm = new HashMap<>();
+        /*for(int i = 0; i < 30; i++){
+
             hm.put(TITLE, "title " + i);
             hm.put(DESCRIPTION, "description " + i);
             myList.add(hm);
-        }
+        }*/
 
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), myList , R.layout.list_item, new String[]{TITLE, DESCRIPTION},
                 new int[]{R.id.nameListTextView, R.id.venueListTextView});

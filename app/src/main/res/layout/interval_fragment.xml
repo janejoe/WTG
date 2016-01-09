@@ -42,6 +42,17 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:id="@+id/dataFromDatePicker2" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="20dp"
+            android:typeface="serif"
+            android:textAlignment="center"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:id="@+id/count" />
     </LinearLayout>
 
     <LinearLayout
