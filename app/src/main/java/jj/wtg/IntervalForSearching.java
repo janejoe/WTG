@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.graphics.Typeface;
+import android.net.ParseException;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,6 +35,16 @@ import com.vk.sdk.api.model.VKList;
 import com.vk.sdk.api.model.*;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,14 +70,15 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
     private int selectedCount;
     private List<String> list;
-   // HashMap <String,String> artistSet = new HashMap<String,String>() ;
+    private HashMap <String,String> concertsId = new HashMap<String,String>() ;
     private HashSet <String> artistSet = new HashSet <> ();
+    private HashMap <String,String> concertsForList = new HashMap<String,String>() ;
 
     public ArrayList<HashMap<String,String>> resultData = new ArrayList<>();
+
+
     ScanAsyncTask scanAsyncTask;
     private Dialog dialogProgress;
-   // private static final String TITLE = "title";
-    //private static final String DESCRIPTION = "description";
     ProgressBar progress;
 
     @Override
@@ -112,6 +125,136 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                         .append(yearEnd).append(" "));
     }
 
+    private HashSet getArtistSet (Integer count){
+        VKParameters params = new VKParameters();
+        if (count != 3) {
+            params.put(VKApiConst.COUNT, Integer.valueOf(list.get(count)));}
+        else params.put(VKApiConst.COUNT, 6000);
+
+        VKRequest requestAudio = VKApi.audio().get(params);
+        requestAudio.executeWithListener(new VKRequest.VKRequestListener() {
+            @Override
+
+            public void onComplete(VKResponse response) {
+                super.onComplete(response);
+                for (int i = 0; i < ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).size(); i++) {
+                    com.vk.sdk.api.model.VKApiAudio vkApiAudio = ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).get(i);
+                    artistSet.add(vkApiAudio.artist);
+
+                    //artistSet.put(TITLE, vkApiAudio.artist);
+                    // artistSet.put(DESCRIPTION, "description");
+                    // resultData.add(artistSet);
+                }
+
+            }
+
+            @Override
+            public void attemptFailed(VKRequest request, int attemptNumber, int totalAttempts) {
+                super.attemptFailed(request, attemptNumber, totalAttempts);
+            }
+
+            @Override
+            public void onError(VKError error) {
+                super.onError(error);
+            }
+
+            @Override
+            public void onProgress(VKRequest.VKProgressType progressType, long bytesLoaded, long bytesTotal) {
+                super.onProgress(progressType, bytesLoaded, bytesTotal);
+            }
+        });
+        Log.d("result doInBackground ", String.valueOf(artistSet));
+        return artistSet;
+    }
+
+    //Parse ponominalu
+
+    //Build url for request
+    String getUrlPonominalu () throws URISyntaxException {
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme("http")
+                .authority("api.cultserv.ru")
+                .appendPath("/jtransport/iphone/get_events")
+                .appendQueryParameter("category", "10")
+                .appendQueryParameter("min_date", new StringBuilder()
+                .append(yearStart).append("-")
+                .append(monthStart+1).append("-")
+                .append(dayStart).append("").toString())
+                .appendQueryParameter("max_date",  new StringBuilder()
+                        .append(yearEnd).append("-")
+                        .append(monthEnd + 1).append("-")
+                        .append(dayEnd).append("").toString())
+                .appendQueryParameter("one_for_event", "true")
+                .appendQueryParameter("region_id", "1")
+                .appendQueryParameter("session", "123")
+                .appendQueryParameter("exclude", "image,link,address,original_image,venue,slide,tags,date,dates,has_offer,str_date,str_time,event,min_price,max_price,ticket_count,eticket_possible,end_date,categories_ids,type,split_titles,add_title");
+        Uri uri = builder.build();
+        String testUrl = uri.toString();
+        return testUrl;
+
+    }
+
+    StringBuilder getContent(URL url, StringBuilder content) {
+        try {
+            URLConnection urlConnection = url.openConnection();
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(urlConnection.getInputStream()));
+
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                content.append(line + "\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return content;
+    }
+
+    private String getAllConcerts () throws ParseException {
+        String testUrl = null;
+        URL url = null; // Get URL
+
+        try {
+            testUrl = getUrlPonominalu();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        try {
+            url = new URL(testUrl);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        // Get Content
+        StringBuilder content = new StringBuilder();
+        content = getContent(url, content);
+        return content.toString();
+    }
+
+    private  HashMap consertsMap(String strJson, HashMap< String, String> concertsId) {
+                JSONObject dataJsonObj = null;
+
+                try {
+                    dataJsonObj = new JSONObject(strJson);
+                    JSONArray events = dataJsonObj.getJSONArray("message");
+
+                  // Get all concerts into hashmap with id and title
+                    for (int i = 0; i < events.length(); i++) {
+                        JSONObject event = events.getJSONObject(i);
+                        concertsId.put(event.getString("title").substring(7),event.getString("id"));
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+        return concertsId;
+    }
+
+
+
+//----------------------------------------------------------
 
 
     @Override
@@ -124,8 +267,6 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 dialogProgress.setContentView(R.layout.progress_bar_scan);
                 dialogProgress.show();
 
-
-
                 Log.d("result searchButton ", String.valueOf(artistSet));
 
 
@@ -134,10 +275,8 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 // [... Продолжение выполнения фоновой задачи ...]
                 // Верните значение, ранее переданное в метод onPostExecute
 
-
-
-
             break;
+
             case R.id.dateSearchButton:
                 //first dialog
                 final Dialog dialog = new Dialog(getActivity());
@@ -217,6 +356,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                         dialog3.cancel();
                     }
                 });
+                break;
 
 
         }
@@ -227,10 +367,11 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
             e.printStackTrace();
         }
 
+
     }
 
 
-    private class ScanAsyncTask extends AsyncTask<Integer, Integer, HashSet <String> > {
+    private class ScanAsyncTask extends AsyncTask<Integer, Integer, HashMap <String, String> > {
 
         @Override
         protected void onPreExecute() {
@@ -239,64 +380,52 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         }
 
         @Override
-        protected HashSet <String> doInBackground(Integer... parameter) {
+        protected HashMap <String, String> doInBackground(Integer... parameter) {
             int myProgress = 0;
-            publishProgress(myProgress);
-            VKParameters params = new VKParameters();
-            if (parameter[0] != 3) {
-                params.put(VKApiConst.COUNT, Integer.valueOf(list.get(parameter[0])));}
-            else params.put(VKApiConst.COUNT, 6000);
+            //publishProgress(myProgress);
+            artistSet=getArtistSet(parameter[0]);
+            if ( !(artistSet.isEmpty())) {
 
-            VKRequest requestAudio = VKApi.audio().get(params);
-                requestAudio.executeWithListener(new VKRequest.VKRequestListener() {
-                    @Override
+                //work with ponominalu
 
-                    public void onComplete(VKResponse response) {
-                        super.onComplete(response);
-                        for (int i = 0; i < ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).size(); i++) {
-                            com.vk.sdk.api.model.VKApiAudio vkApiAudio = ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).get(i);
-                            artistSet.add(vkApiAudio.artist);
+                String content = null;
+                content=getAllConcerts();
+                concertsId = consertsMap(content, concertsId); //Get all concert's titles and id's
 
-                //artistSet.put(TITLE, vkApiAudio.artist);
-                // artistSet.put(DESCRIPTION, "description");
-                // resultData.add(artistSet);
+                //eguals artists and concerts
+
+                for ( String artist: artistSet) {
+                        for (String key: concertsId.keySet())
+                        if (artist.equals(key)){
+                            concertsForList.put(artist, concertsId.get(key));
+                        }
+                }
+
             }
-
-                }
-
-                @Override
-                public void attemptFailed(VKRequest request, int attemptNumber, int totalAttempts) {
-                    super.attemptFailed(request, attemptNumber, totalAttempts);
-                }
-
-                @Override
-                public void onError(VKError error) {
-                    super.onError(error);
-                }
-
-                @Override
-                public void onProgress(VKRequest.VKProgressType progressType, long bytesLoaded, long bytesTotal) {
-                    super.onProgress(progressType, bytesLoaded, bytesTotal);
-                }
-            });
 
 
 
             // [... Выполните задачу в фоновом режиме, обновите переменную myProgress...]
             // [... Продолжение выполнения фоновой задачи ...]
             // Верните значение, ранее переданное в метод onPostExecute
-            Log.d("result doInBackground ", String.valueOf(artistSet));
-            return artistSet;
+
+
+
+          //  if ( !(artistSet.isEmpty())) {
+                publishProgress(myProgress);
+         //   }
+            return concertsForList;
         }
         @Override
         protected void onProgressUpdate(Integer... progress) {
 
-          //  dialogProgress.cancel();
+            if (dialogProgress != null){
+            dialogProgress.cancel();}
 
         }
 
         @Override
-        protected void onPostExecute(HashSet<String>  result) {
+        protected void onPostExecute(HashMap <String, String>  result) {
            // super.onPostExecute(result);
             //заполнить адаптер
            /* Iterator iter = result.keySet().iterator();
