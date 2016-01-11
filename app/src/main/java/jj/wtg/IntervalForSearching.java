@@ -70,11 +70,11 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
     private int selectedCount;
     private List<String> list;
-    private HashMap <String,String> concertsId = new HashMap<String,String>() ;
-    private HashSet <String> artistSet = new HashSet <> ();
-    private HashMap <String,String> concertsForList = new HashMap<String,String>() ;
+    private HashMap<String, String> concertsId = new HashMap<String, String>();
+    private HashSet<String> artistSet = new HashSet<>();
+    private ArrayList<ConcertsForList> concertsForList = new ArrayList<ConcertsForList>();
 
-    public ArrayList<HashMap<String,String>> resultData = new ArrayList<>();
+    public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
 
 
     ScanAsyncTask scanAsyncTask;
@@ -88,10 +88,10 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
         search = (Button) v.findViewById(R.id.searchButton);
         dateSearchButton = (Button) v.findViewById(R.id.dateSearchButton);
-        dateFromPicker = (TextView)v.findViewById(R.id.dataFromDatePicker);
-        dateFromPicker2 = (TextView)v.findViewById(R.id.dataFromDatePicker2);
-        tracksCount = (TextView)v.findViewById(R.id.count);
-        progress = (ProgressBar)v.findViewById(R.id.progress);
+        dateFromPicker = (TextView) v.findViewById(R.id.dataFromDatePicker);
+        dateFromPicker2 = (TextView) v.findViewById(R.id.dataFromDatePicker2);
+        tracksCount = (TextView) v.findViewById(R.id.count);
+        progress = (ProgressBar) v.findViewById(R.id.progress);
 
         search.setOnClickListener(this);
         dateSearchButton.setOnClickListener(this);
@@ -101,7 +101,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         return v;
     }
 
-    private void font(){
+    private void font() {
         Typeface type2 = Typeface.createFromAsset(getActivity().getAssets(), RepeatData.TYPEFONT);
         search.setTypeface(type2);
         dateSearchButton.setTypeface(type2);
@@ -125,11 +125,11 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                         .append(yearEnd).append(" "));
     }
 
-    private HashSet getArtistSet (Integer count){
+    private HashSet getArtistSet(Integer count) {
         VKParameters params = new VKParameters();
         if (count != 3) {
-            params.put(VKApiConst.COUNT, Integer.valueOf(list.get(count)));}
-        else params.put(VKApiConst.COUNT, 6000);
+            params.put(VKApiConst.COUNT, Integer.valueOf(list.get(count)));
+        } else params.put(VKApiConst.COUNT, 6000);
 
         VKRequest requestAudio = VKApi.audio().get(params);
         requestAudio.executeWithListener(new VKRequest.VKRequestListener() {
@@ -170,24 +170,24 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     //Parse ponominalu
 
     //Build url for request
-    String getUrlPonominalu () throws URISyntaxException {
+    String getUrlPonominalu() throws URISyntaxException {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("http")
                 .authority("api.cultserv.ru")
                 .appendPath("/jtransport/iphone/get_events")
                 .appendQueryParameter("category", "10")
                 .appendQueryParameter("min_date", new StringBuilder()
-                .append(yearStart).append("-")
-                .append(monthStart+1).append("-")
-                .append(dayStart).append("").toString())
-                .appendQueryParameter("max_date",  new StringBuilder()
+                        .append(yearStart).append("-")
+                        .append(monthStart + 1).append("-")
+                        .append(dayStart).append("").toString())
+                .appendQueryParameter("max_date", new StringBuilder()
                         .append(yearEnd).append("-")
                         .append(monthEnd + 1).append("-")
                         .append(dayEnd).append("").toString())
                 .appendQueryParameter("one_for_event", "true")
                 .appendQueryParameter("region_id", "1")
                 .appendQueryParameter("session", "123")
-                .appendQueryParameter("exclude", "image,link,address,original_image,venue,slide,tags,date,dates,has_offer,str_date,str_time,event,min_price,max_price,ticket_count,eticket_possible,end_date,categories_ids,type,split_titles,add_title");
+                .appendQueryParameter("exclude", "image,link,address,original_image,slide,tags,date,dates,has_offer,event,max_price,ticket_count,eticket_possible,end_date,categories_ids,type,split_titles,add_title");
         Uri uri = builder.build();
         String testUrl = uri.toString();
         return testUrl;
@@ -211,7 +211,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         return content;
     }
 
-    private String getAllConcerts () throws ParseException {
+    private String getAllConcerts() throws ParseException {
         String testUrl = null;
         URL url = null; // Get URL
 
@@ -232,26 +232,25 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         return content.toString();
     }
 
-    private  HashMap consertsMap(String strJson, HashMap< String, String> concertsId) {
-                JSONObject dataJsonObj = null;
+    private HashMap consertsMap(String strJson, HashMap<String, String> concertsId) {
+        JSONObject dataJsonObj = null;
 
-                try {
-                    dataJsonObj = new JSONObject(strJson);
-                    JSONArray events = dataJsonObj.getJSONArray("message");
+        try {
+            dataJsonObj = new JSONObject(strJson);
+            JSONArray events = dataJsonObj.getJSONArray("message");
 
-                  // Get all concerts into hashmap with id and title
-                    for (int i = 0; i < events.length(); i++) {
-                        JSONObject event = events.getJSONObject(i);
-                        concertsId.put(event.getString("title").substring(7),event.getString("id"));
-                    }
+            // Get all concerts into hashmap with id and title
+            for (int i = 0; i < events.length(); i++) {
+                JSONObject event = events.getJSONObject(i);
+                concertsId.put(event.getString("title").substring(7), event.getString("id"));
+            }
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         return concertsId;
     }
-
 
 
 //----------------------------------------------------------
@@ -259,7 +258,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.searchButton:
 
                 dialogProgress = new Dialog(getActivity());
@@ -269,13 +268,12 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
                 Log.d("result searchButton ", String.valueOf(artistSet));
 
-
                 // [... Выполните задачу в фоновом режиме, обновите переменную myProgress...]
                 // publishProgress(myProgress);
                 // [... Продолжение выполнения фоновой задачи ...]
                 // Верните значение, ранее переданное в метод onPostExecute
 
-            break;
+                break;
 
             case R.id.dateSearchButton:
                 //first dialog
@@ -284,14 +282,14 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 dialog.setContentView(R.layout.start_data_picker);
                 dialog.show();
 
-                final DatePicker picker = (DatePicker)dialog.findViewById(R.id.startDatePicker);
+                final DatePicker picker = (DatePicker) dialog.findViewById(R.id.startDatePicker);
 
                 //second dialog
                 final Dialog dialog2 = new Dialog(getActivity());
                 dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE);
                 dialog2.setContentView(R.layout.end_date_picker);
 
-                final DatePicker picker2 = (DatePicker)dialog2.findViewById(R.id.endDatePicker);
+                final DatePicker picker2 = (DatePicker) dialog2.findViewById(R.id.endDatePicker);
 
                 //third dialog
                 final Dialog dialog3 = new Dialog(getActivity());
@@ -363,7 +361,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
         try {
             new ScanAsyncTask().execute(selectedCount).get();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -371,86 +369,74 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     }
 
 
-    private class ScanAsyncTask extends AsyncTask<Integer, Integer, HashMap <String, String> > {
+    private class ScanAsyncTask extends AsyncTask<Integer, Integer, ArrayList<ConcertsForList>> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
         }
 
         @Override
-        protected HashMap <String, String> doInBackground(Integer... parameter) {
+        protected ArrayList<ConcertsForList> doInBackground(Integer... parameter) {
             int myProgress = 0;
             //publishProgress(myProgress);
-            artistSet=getArtistSet(parameter[0]);
-            if ( !(artistSet.isEmpty())) {
+            artistSet = getArtistSet(parameter[0]);
+            if (!(artistSet.isEmpty())) {
 
                 //work with ponominalu
 
                 String content = null;
-                content=getAllConcerts();
+                content = getAllConcerts();
                 concertsId = consertsMap(content, concertsId); //Get all concert's titles and id's
 
                 //eguals artists and concerts
 
-                for ( String artist: artistSet) {
-                        for (String key: concertsId.keySet())
-                        if (artist.equals(key)){
-                            concertsForList.put(artist, concertsId.get(key));
+                for (String artist : artistSet) {
+                    for (String key : concertsId.keySet())
+                        if (key.contains(artist)) {
+                            concertsForList.add(new ConcertsForList(artist,concertsId.get(key) ));
                         }
                 }
 
             }
-
-
 
             // [... Выполните задачу в фоновом режиме, обновите переменную myProgress...]
             // [... Продолжение выполнения фоновой задачи ...]
             // Верните значение, ранее переданное в метод onPostExecute
 
 
-
-          //  if ( !(artistSet.isEmpty())) {
-                publishProgress(myProgress);
-         //   }
+            //  if ( !(artistSet.isEmpty())) {
+            publishProgress(myProgress);
+            //   }
             return concertsForList;
         }
+
         @Override
         protected void onProgressUpdate(Integer... progress) {
 
-            if (dialogProgress != null){
-            dialogProgress.cancel();}
+            if (dialogProgress != null) {
+                dialogProgress.cancel();
+            }
 
         }
 
         @Override
-        protected void onPostExecute(HashMap <String, String>  result) {
-           // super.onPostExecute(result);
-            //заполнить адаптер
-           /* Iterator iter = result.keySet().iterator();
-            while (iter.hasNext()) {
+        protected void onPostExecute(ArrayList<ConcertsForList> result) {
+            super.onPostExecute(result);
+            if (dialogProgress != null) {
+                dialogProgress.cancel();
+            }
+            if (!result.isEmpty()) {
+                Fragment fragment = new ItemList();
 
-                String key=(String)iter.next();
-                String value=(String)result.get(key);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("concertsForList", result);
+                fragment.setArguments(bundle);
 
-            }*/
-
-            /*Iterator<String> itr = result.iterator();
-            Toast.makeText(getActivity(), itr.next(), Toast.LENGTH_SHORT).show();*/
-
-            //ItemList.hm = new HashMap<String, String>(artistSet);
-
-          // dialogProgress.cancel();
-
-           //Fragment fragment = new ItemList();
-
-           //FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-
-            //fragmentTransaction.replace(R.id.frameContent, fragment).addToBackStack( "tag" ).commit();
-
-
-
+                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.frameContent, fragment).addToBackStack("tag").commit();
+            }
         }
     }
 }
+

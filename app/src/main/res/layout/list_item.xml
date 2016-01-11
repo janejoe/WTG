@@ -7,6 +7,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
         android:text="Title"
         android:textSize="25sp"
         android:id="@+id/nameListTextView" />
@@ -14,6 +15,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
         android:text="Venue"
         android:id="@+id/venueListTextView" />
 

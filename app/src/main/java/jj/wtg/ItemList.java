@@ -9,23 +9,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Created by Лера on 03.01.2016.
- */
+
 public class ItemList  extends Fragment{
 
-    private static final String TITLE = "title";
-    private static final String DESCRIPTION = "description";
-    ArrayList<HashMap<String,String>> myList;
-    HashMap<String, String>  hm;
+    ArrayList<ConcertsForList> myList;
     IntervalForSearching intervalForSearching;
 
     @Override
@@ -33,20 +30,17 @@ public class ItemList  extends Fragment{
 
         View v = inflater.inflate(R.layout.list_fragment, container, false);
         ListView lv = (ListView)v.findViewById(R.id.concertListView);
+        Bundle bundle = this.getArguments();
 
         myList = new ArrayList<>();
-        hm = new HashMap<>();
 
-       // System.out.println(IntervalForSearching.resultData);
+        if (bundle != null) {
+            myList = (ArrayList<ConcertsForList>) bundle.getSerializable("concertsForList");
+        }
+        else Toast.makeText(getActivity(), "empty!", Toast.LENGTH_SHORT).show();
 
-        /*for(int i = 0; i < 30; i++){
-
-            hm.put(TITLE, "title " + i);
-            hm.put(DESCRIPTION, "description " + i);
-            myList.add(hm);
-        }*/
-
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), myList , R.layout.list_item, new String[]{TITLE, DESCRIPTION},
+        ListAdapter adapter = new SimpleAdapter(getActivity(), myList , R.layout.list_item,
+                new String[]{ConcertsForList.TITLE, ConcertsForList.ID},
                 new int[]{R.id.nameListTextView, R.id.venueListTextView});
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -62,6 +56,7 @@ public class ItemList  extends Fragment{
         });
 
         lv.setAdapter(adapter);
+
 
         return v;
     }
