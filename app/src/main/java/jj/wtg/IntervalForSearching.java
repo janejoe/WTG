@@ -74,7 +74,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     private HashSet<String> artistSet = new HashSet<>();
     private ArrayList<ConcertsForList> concertsForList = new ArrayList<ConcertsForList>();
 
-    //public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
+    public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
 
 
     ScanAsyncTask scanAsyncTask;
@@ -187,7 +187,10 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 .appendQueryParameter("one_for_event", "true")
                 .appendQueryParameter("region_id", "1")
                 .appendQueryParameter("session", "123")
-                .appendQueryParameter("exclude", "image,link,address,original_image,slide,tags,date,dates,has_offer,event,max_price,ticket_count,eticket_possible,end_date,categories_ids,type,split_titles,add_title");
+                .appendQueryParameter("exclude", "image,link,address,original_image,venue,slide," +
+                        "tags,date,dates,has_offer,str_date,str_time,event,min_price,max_price," +
+                        "ticket_count,eticket_possible,end_date,categories_ids,type,split_titles," +
+                        "add_title");
         Uri uri = builder.build();
         String testUrl = uri.toString();
         return testUrl;
