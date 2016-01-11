@@ -74,7 +74,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     private HashSet<String> artistSet = new HashSet<>();
     private ArrayList<ConcertsForList> concertsForList = new ArrayList<ConcertsForList>();
 
-    public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
+    //public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
 
 
     ScanAsyncTask scanAsyncTask;
