@@ -6,8 +6,6 @@ import android.net.ParseException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,16 +26,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
 
 
 public class ItemList  extends Fragment{
 
     ArrayList<ConcertsForList> myList;
-    private ArrayList<ConcertsInfo> concertsInfo = new ArrayList<ConcertsInfo>();
+    ArrayList<ConcertsInfo> concertsInfo = new ArrayList<ConcertsInfo>();
     IntervalForSearching intervalForSearching;
+
+    InfoAsyncTask infoAsyncTask;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,13 +50,24 @@ public class ItemList  extends Fragment{
         }
         else Toast.makeText(getActivity(), "empty!", Toast.LENGTH_SHORT).show();
 
-        ListAdapter adapter = new SimpleAdapter(getActivity(), myList , R.layout.list_item,
+        final ListAdapter adapter = new SimpleAdapter(getActivity(), myList , R.layout.list_item,
                 new String[]{ConcertsForList.TITLE, ConcertsForList.ID},
                 new int[]{R.id.nameListTextView, R.id.venueListTextView});
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
+
+
+                ConcertsForList item1 = myList.get(position);
+                String item2 = item1.get(ConcertsForList.ID);
+
+
+                try {
+                    concertsInfo = new InfoAsyncTask().execute(item2).get();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 Fragment fragment = new Info();
                 Bundle bundle = new Bundle();
@@ -148,18 +156,16 @@ public class ItemList  extends Fragment{
 
         try {
             dataJsonObj = new JSONObject(strJson);
-            JSONArray events = dataJsonObj.getJSONArray("message");
+            JSONObject event = dataJsonObj.getJSONObject("message");
 
-            // Get all concerts into hashmap with id and title
-            for (int i = 0; i < events.length(); i++) {
-                JSONObject event = events.getJSONObject(i);
+
                 concertsInfo.add(new ConcertsInfo(
                         event.getString("title").substring(7),
                         event.getString("str_date"),
                         event.getString("str_time"),
                         event.getString("min_price"),
-                        "0"));
-            }
+                        event.getString("min_price")));
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -168,7 +174,7 @@ public class ItemList  extends Fragment{
         return concertsInfo;
     }
 
-private class ScanAsyncTask extends AsyncTask<String, Integer, ArrayList<ConcertsInfo>> {
+private class InfoAsyncTask extends AsyncTask<String, Integer, ArrayList<ConcertsInfo>> {
 
     @Override
     protected void onPreExecute() {
