@@ -22,7 +22,7 @@ public class Info extends Fragment implements View.OnClickListener{
     TextView timeTextView;
     TextView venueTextView;
     TextView priceTextView;
-    ArrayList<ConcertsInfo> concertsInfo =  new ArrayList<ConcertsInfo>();
+    ConcertsInfo info;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -37,16 +37,16 @@ public class Info extends Fragment implements View.OnClickListener{
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            concertsInfo = (ArrayList<ConcertsInfo>) bundle.getSerializable("concertsInfo");
+            info = (ConcertsInfo) bundle.getSerializable("concertsInfo");
         }
 
-        ConcertsInfo item1 = concertsInfo.get(0);
 
-        eventTextView.setText("Кто: " + item1.get(ConcertsInfo.TITLE));
-        dateTextView.setText("Когда: " + item1.get(ConcertsInfo.DATE));
-        timeTextView.setText("Во сколько: " +item1.get(ConcertsInfo.TIME));
-        venueTextView.setText("Где: " +item1.get(ConcertsInfo.VENUE));
-        priceTextView.setText("Цена: " + item1.get(ConcertsInfo.PRICE));
+
+        eventTextView.setText("Кто: " + info.get(ConcertsInfo.TITLE));
+        dateTextView.setText("Когда: " + info.get(ConcertsInfo.DATE));
+        timeTextView.setText("Во сколько: " +info.get(ConcertsInfo.TIME));
+        venueTextView.setText("Где: " +info.get(ConcertsInfo.VENUE));
+        priceTextView.setText("Цена: " + info.get(ConcertsInfo.PRICE));
 
 
 
@@ -68,4 +68,5 @@ public class Info extends Fragment implements View.OnClickListener{
                 addToCalendar.setEnabled(false);
         }
     }
+
 }

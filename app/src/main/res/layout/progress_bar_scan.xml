@@ -14,7 +14,7 @@
         android:gravity="center"
         android:textColor="#000"
         android:textSize="25sp"
-        android:text="@+id/progress_audio" />
+        android:text="Сканирую аудио" />
 
     <ProgressBar
         android:id="@+id/progress"
