@@ -75,12 +75,9 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     private Map<String, String> concertsId = new TreeMap<>();
     private TreeSet<String> artistSet= new TreeSet<>();
 
-    private ArrayList<ConcertsForList> concertsForList = new ArrayList<ConcertsForList>();
-    private ArrayList<ConcertsInfo> concertsInfo = new ArrayList<ConcertsInfo>();
+    private ArrayList<ConcertsForList> concertsForList = new ArrayList<>();
+    private ArrayList<ConcertsInfo> concertsInfo = new ArrayList<>();
 
-    public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
-
-    private Dialog dialogProgress;
     ProgressBar progress;
 
     @Override
@@ -97,7 +94,6 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
         search.setOnClickListener(this);
         dateSearchButton.setOnClickListener(this);
-
         font();
 
         return v;
@@ -362,18 +358,17 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
         @Override
         protected void onPreExecute() {
-
-            dialogProgress = new Dialog(getActivity());
-            dialogProgress.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            dialogProgress.setContentView(R.layout.progress_bar_scan);
-            dialogProgress.show();
+            progress.setVisibility(getView().VISIBLE);
+            search.setVisibility(getView().INVISIBLE);
+            dateSearchButton.setVisibility(getView().INVISIBLE);
+            dateFromPicker.setVisibility(getView().INVISIBLE);
+            dateFromPicker2.setVisibility(getView().INVISIBLE);
+            tracksCount.setVisibility(getView().INVISIBLE);
 
         }
 
         @Override
         protected ArrayList<ConcertsInfo> doInBackground(Integer... parameter) {
-            int myProgress = 0;
-           // artistSet = getArtistSet(selectedCount);
 
             if (!(artistSet.isEmpty())) {
                 //work with ponominalu
@@ -420,9 +415,8 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         @Override
         protected void onPostExecute(ArrayList<ConcertsInfo> result) {
             super.onPostExecute(result);
-            if (dialogProgress.isShowing()) {
-                dialogProgress.cancel();
-            }
+            progress.setVisibility(View.GONE);
+
             if (!result.isEmpty()) {
                 Fragment fragment = new ItemList();
 
