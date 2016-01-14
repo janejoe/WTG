@@ -1,7 +1,5 @@
 package jj.wtg;
 
-import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -19,10 +17,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ProgressBar;
-import android.widget.SimpleAdapter;
+
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.vk.sdk.api.VKApi;
 import com.vk.sdk.api.VKApiConst;
@@ -30,9 +28,9 @@ import com.vk.sdk.api.VKError;
 import com.vk.sdk.api.VKParameters;
 import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
-import com.vk.sdk.api.model.VKApiAudio;
+
 import com.vk.sdk.api.model.VKList;
-import com.vk.sdk.api.model.*;
+
 
 
 import org.json.JSONArray;
@@ -46,11 +44,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class IntervalForSearching extends Fragment implements View.OnClickListener {
 
@@ -70,15 +71,15 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
     private int selectedCount;
     private List<String> list;
-    private HashMap<String, String> concertsId = new HashMap<String, String>();
-    private HashSet<String> artistSet = new HashSet<>();
+
+    private Map<String, String> concertsId = new TreeMap<>();
+    private TreeSet<String> artistSet= new TreeSet<>();
+
     private ArrayList<ConcertsForList> concertsForList = new ArrayList<ConcertsForList>();
     private ArrayList<ConcertsInfo> concertsInfo = new ArrayList<ConcertsInfo>();
 
     public ArrayList<HashMap<String, String>> resultData = new ArrayList<>();
 
-
-    ScanAsyncTask scanAsyncTask;
     private Dialog dialogProgress;
     ProgressBar progress;
 
@@ -126,7 +127,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                         .append(yearEnd).append(" "));
     }
 
-    private HashSet getArtistSet(Integer count) {
+    private TreeSet getArtistSet(Integer count) {
         VKParameters params = new VKParameters();
         if (count != 3) {
             params.put(VKApiConst.COUNT, Integer.valueOf(list.get(count)));
@@ -146,7 +147,12 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                     // artistSet.put(DESCRIPTION, "description");
                     // resultData.add(artistSet);
                 }
+                try {
+                    new ScanAsyncTask().execute(selectedCount);
 
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -236,7 +242,7 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         return content.toString();
     }
 
-    private HashMap consertsMap(String strJson, HashMap<String, String> concertsId) {
+    private Map consertsMap(String strJson, Map<String, String> concertsId) {
         JSONObject dataJsonObj = null;
 
         try {
@@ -263,20 +269,6 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.searchButton:
-
-                /*dialogProgress = new Dialog(getActivity());
-                dialogProgress.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                dialogProgress.setContentView(R.layout.progress_bar_scan);
-                dialogProgress.show();*/
-
-                // [... Выполните задачу в фоновом режиме, обновите переменную myProgress...]
-                // publishProgress(myProgress);
-                // [... Продолжение выполнения фоновой задачи ...]
-                // Верните значение, ранее переданное в метод onPostExecute
-
-                break;
-
             case R.id.dateSearchButton:
                 //first dialog
                 final Dialog dialog = new Dialog(getActivity());
@@ -357,12 +349,12 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                     }
                 });
                 break;
+
+            case R.id.searchButton:
+                artistSet = getArtistSet(selectedCount);
+                break;
         }
-            try {
-                new ScanAsyncTask().execute(selectedCount);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
     }
 
 
@@ -370,25 +362,26 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
+
             dialogProgress = new Dialog(getActivity());
             dialogProgress.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialogProgress.setContentView(R.layout.progress_bar_scan);
             dialogProgress.show();
+
         }
 
         @Override
         protected ArrayList<ConcertsInfo> doInBackground(Integer... parameter) {
             int myProgress = 0;
-            artistSet = getArtistSet(parameter[0]);
-            if (!(artistSet.isEmpty())) {
+           // artistSet = getArtistSet(selectedCount);
 
+            if (!(artistSet.isEmpty())) {
                 //work with ponominalu
 
                 String content = null;
                 content = getAllConcerts();
-                concertsId = consertsMap(content, concertsId); //Get all concert's titles and id's
-
+                //Get all concert's titles and id's
+                concertsId = consertsMap(content, concertsId);
 
                 //eguals artists and concerts
 
@@ -396,11 +389,12 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                     for (String key : concertsId.keySet()) {
                         if (key.contains(artist)) {
                             concertsForList.add(new ConcertsForList(artist, concertsId.get(key)));
-                            //подбробное инфо ищем
+                            //get info
                             try {
                                 String contentInfo;
                                 contentInfo = getEventsInfo(concertsId.get(key));
-                                concertsInfo = infoMap(contentInfo, concertsInfo); //Get all concert's titles and id's
+                                concertsInfo = infoMap(contentInfo, concertsInfo);
+                                break;
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -411,14 +405,6 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
 
             }
 
-            // [... Выполните задачу в фоновом режиме, обновите переменную myProgress...]
-            // [... Продолжение выполнения фоновой задачи ...]
-            // Верните значение, ранее переданное в метод onPostExecute
-
-
-            //  if ( !(artistSet.isEmpty())) {
-            //publishProgress(myProgress);
-            //   }
             return concertsInfo;
         }
 

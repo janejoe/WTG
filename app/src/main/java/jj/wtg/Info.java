@@ -1,7 +1,9 @@
 package jj.wtg;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Лера on 03.01.2016.
@@ -63,7 +67,19 @@ public class Info extends Fragment implements View.OnClickListener{
         switch (v.getId()){
             case R.id.toCalendarButton:
 
-                Toast.makeText(getActivity(),"Событие добавлено",Toast.LENGTH_SHORT).show();
+                Calendar beginTime = Calendar.getInstance();
+                beginTime.set(2016, 0, 19, 7, 30);
+                Calendar endTime = Calendar.getInstance();
+                endTime.set(2016, 0, 19, 8, 30);
+                Intent intent = new Intent(Intent.ACTION_INSERT)
+                    .setData(CalendarContract.Events.CONTENT_URI)
+                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
+                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTime.getTimeInMillis())
+                    .putExtra(CalendarContract.Events.TITLE, info.get(ConcertsInfo.TITLE))
+                    .putExtra(CalendarContract.Events.DESCRIPTION, "Концерт")
+                    .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
+                    .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+                startActivity(intent);
 
                 addToCalendar.setEnabled(false);
         }
