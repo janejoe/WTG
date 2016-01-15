@@ -1,17 +1,11 @@
 package jj.wtg;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.support.v4.app.NavUtils;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.vk.sdk.VKAccessToken;
@@ -32,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-       // String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
+        // String[] fingerprints = VKUtil.getCertificateFingerprint(this, this.getPackageName());
         //System.out.println(Arrays.asList(fingerprints));
 
         VKSdk.login(this, scope);
@@ -42,12 +36,12 @@ public class MainActivity extends AppCompatActivity {
             setSupportActionBar(toolbar);
         }
 
-        Fragment fragment = new IntervalForSearching();
+        Fragment fragment = new MainSearching();
 
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
 
         fragmentTransaction.replace(R.id.frameContent, fragment).addToBackStack( "tag" ).commit();
-        
+
     }
 
     @Override
@@ -74,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         int count = getFragmentManager().getBackStackEntryCount();
 
-        if (count == 1) {
+        if (count == 2) {
             super.onBackPressed();
             //additional code
         } else {

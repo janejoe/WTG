@@ -3,6 +3,10 @@ package jj.wtg;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Typeface;
 import android.net.ParseException;
 import android.net.Uri;
@@ -38,39 +42,30 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import java.util.HashMap;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class IntervalForSearching extends Fragment implements View.OnClickListener {
+public class MainSearching extends Fragment implements View.OnClickListener {
 
     private Button search;
-    private Button dateSearchButton;
-    private TextView dateFromPicker;
-    private TextView dateFromPicker2;
-    private TextView tracksCount;
-
-    private int yearStart;
-    private int monthStart;
-    private int dayStart;
-
-    private int yearEnd;
-    private int monthEnd;
-    private int dayEnd;
-
-    private int selectedCount;
-    private List<String> list;
+    private Button updateButton;
+    ProgressBar progress;
 
     private Map<String, String> concertsId = new TreeMap<>();
     private TreeSet<String> artistSet= new TreeSet<>();
@@ -78,7 +73,9 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     private ArrayList<ConcertsForList> concertsForList = new ArrayList<>();
     private ArrayList<ConcertsInfo> concertsInfo = new ArrayList<>();
 
-    ProgressBar progress;
+    private ConcertsDatabaseHelper concertsDatabaseHelper;
+    private SQLiteDatabase mSqLiteDatabase;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,14 +83,11 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         View v = inflater.inflate(R.layout.interval_fragment, container, false);
 
         search = (Button) v.findViewById(R.id.searchButton);
-        dateSearchButton = (Button) v.findViewById(R.id.dateSearchButton);
-        dateFromPicker = (TextView) v.findViewById(R.id.dataFromDatePicker);
-        dateFromPicker2 = (TextView) v.findViewById(R.id.dataFromDatePicker2);
-        tracksCount = (TextView) v.findViewById(R.id.count);
+        updateButton = (Button) v.findViewById(R.id.dateSearchButton);
         progress = (ProgressBar) v.findViewById(R.id.progress);
 
         search.setOnClickListener(this);
-        dateSearchButton.setOnClickListener(this);
+        updateButton.setOnClickListener(this);
         font();
 
         return v;
@@ -102,32 +96,13 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     private void font() {
         Typeface type2 = Typeface.createFromAsset(getActivity().getAssets(), RepeatData.TYPEFONT);
         search.setTypeface(type2);
-        dateSearchButton.setTypeface(type2);
+        updateButton.setTypeface(type2);
     }
 
-    private void updateDisplay() {
-        dateFromPicker.setText(
-                new StringBuilder()
-                        // Month is 0 based so add 1
-                        .append(monthStart + 1).append("-")
-                        .append(dayStart).append("-")
-                        .append(yearStart).append(" "));
-    }
+    private TreeSet getArtistSet() {
 
-    private void updateDisplay2() {
-        dateFromPicker2.setText(
-                new StringBuilder()
-                        // Month is 0 based so add 1
-                        .append(monthEnd + 1).append("-")
-                        .append(dayEnd).append("-")
-                        .append(yearEnd).append(" "));
-    }
-
-    private TreeSet getArtistSet(Integer count) {
         VKParameters params = new VKParameters();
-        if (count != 3) {
-            params.put(VKApiConst.COUNT, Integer.valueOf(list.get(count)));
-        } else params.put(VKApiConst.COUNT, 6000);
+        params.put(VKApiConst.COUNT, 6000);
 
         VKRequest requestAudio = VKApi.audio().get(params);
         requestAudio.executeWithListener(new VKRequest.VKRequestListener() {
@@ -138,13 +113,9 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 for (int i = 0; i < ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).size(); i++) {
                     com.vk.sdk.api.model.VKApiAudio vkApiAudio = ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).get(i);
                     artistSet.add(vkApiAudio.artist);
-
-                    //artistSet.put(TITLE, vkApiAudio.artist);
-                    // artistSet.put(DESCRIPTION, "description");
-                    // resultData.add(artistSet);
                 }
                 try {
-                    new ScanAsyncTask().execute(selectedCount);
+                    new ScanAsyncTask().execute();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -166,27 +137,21 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 super.onProgress(progressType, bytesLoaded, bytesTotal);
             }
         });
-        Log.d("result doInBackground ", String.valueOf(artistSet));
         return artistSet;
     }
+    //--------------------Build url for request----------------------------------------
 
-    //Parse ponominalu
-
-    //Build url for request
     String getUrlPonominalu() throws URISyntaxException {
+        Date date = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+
+
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("http")
                 .authority("api.cultserv.ru")
                 .appendPath("/jtransport/iphone/get_events")
                 .appendQueryParameter("category", "10")
-                .appendQueryParameter("min_date", new StringBuilder()
-                        .append(yearStart).append("-")
-                        .append(monthStart + 1).append("-")
-                        .append(dayStart).append("").toString())
-                .appendQueryParameter("max_date", new StringBuilder()
-                        .append(yearEnd).append("-")
-                        .append(monthEnd + 1).append("-")
-                        .append(dayEnd).append("").toString())
+                .appendQueryParameter("min_date", df.format(date))
                 .appendQueryParameter("one_for_event", "true")
                 .appendQueryParameter("region_id", "1")
                 .appendQueryParameter("session", "123")
@@ -197,7 +162,6 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         Uri uri = builder.build();
         String testUrl = uri.toString();
         return testUrl;
-
     }
 
     StringBuilder getContent(URL url, StringBuilder content) {
@@ -238,8 +202,12 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         return content.toString();
     }
 
-    private Map consertsMap(String strJson, Map<String, String> concertsId) {
+    //-------------------------------Fill DataBase With Concerts ID---------------------------------
+
+    private Map getConcertsId (String strJson, Map<String, String> concertsId) {
         JSONObject dataJsonObj = null;
+        concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
+        mSqLiteDatabase  = concertsDatabaseHelper.getReadableDatabase();
 
         try {
             dataJsonObj = new JSONObject(strJson);
@@ -251,13 +219,21 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
                 concertsId.put(event.getString("title").substring(7), event.getString("id"));
             }
 
+            ContentValues newValues = new ContentValues();
+            // Задайте значения для каждого столбца
+            for (String key : concertsId.keySet()) {
+                newValues.put(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,  key);
+                newValues.put(ConcertsDatabaseHelper.CONCERT_ID_COLUMN, concertsId.get(key));
+                // Вставляем данные в таблицу
+                mSqLiteDatabase.insert("concert", null, newValues);
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         return concertsId;
     }
-
 
 //----------------------------------------------------------
 
@@ -266,161 +242,95 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.dateSearchButton:
-                //first dialog
-                final Dialog dialog = new Dialog(getActivity());
-                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                dialog.setContentView(R.layout.start_data_picker);
-                dialog.show();
-
-                final DatePicker picker = (DatePicker) dialog.findViewById(R.id.startDatePicker);
-
-                //second dialog
-                final Dialog dialog2 = new Dialog(getActivity());
-                dialog2.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                dialog2.setContentView(R.layout.end_date_picker);
-
-                final DatePicker picker2 = (DatePicker) dialog2.findViewById(R.id.endDatePicker);
-
-                //third dialog
-                final Dialog dialog3 = new Dialog(getActivity());
-                dialog3.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                dialog3.setContentView(R.layout.number_aidio);
-
-                final Spinner spinner = (Spinner) dialog3.findViewById(R.id.spinner);
-                list = new ArrayList<>();
-                list.add("100");
-                list.add("200");
-                list.add("300");
-                list.add("Все");
-
-
-                ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), R.layout.row, list);
-                spinner.setAdapter(dataAdapter);
-
-                //button of first dialog
-                Button beginingIntervalButton = (Button) dialog.findViewById(R.id.beginingIntervalButton);
-
-                beginingIntervalButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        yearStart = picker.getYear();
-                        monthStart = picker.getMonth();
-                        dayStart = picker.getDayOfMonth();
-
-                        updateDisplay();
-
-                        dialog.cancel();
-                        dialog2.show();
-                    }
-                });
-
-                //button of second dialog
-                Button endIntervalButton = (Button) dialog2.findViewById(R.id.endIntervalButton);
-
-                endIntervalButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        yearEnd = picker2.getYear();
-                        monthEnd = picker2.getMonth();
-                        dayEnd = picker2.getDayOfMonth();
-
-                        updateDisplay2();
-
-                        dialog2.cancel();
-                        dialog3.show();
-                    }
-                });
-                //third button
-                Button numberAudioButton = (Button) dialog3.findViewById(R.id.number_of_audio);
-
-                numberAudioButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        selectedCount = spinner.getSelectedItemPosition();
-                        tracksCount.setText(list.get(selectedCount));
-                        dialog3.cancel();
-                    }
-                });
+               //update
                 break;
 
             case R.id.searchButton:
-                artistSet = getArtistSet(selectedCount);
+                artistSet = getArtistSet();
                 break;
         }
-
     }
 
-
-    private class ScanAsyncTask extends AsyncTask<Integer, Integer, ArrayList<ConcertsInfo>> {
-
+    private class ScanAsyncTask extends AsyncTask<Void, Void, ArrayList<ConcertsInfo>> {
         @Override
         protected void onPreExecute() {
             progress.setVisibility(getView().VISIBLE);
             search.setVisibility(getView().INVISIBLE);
-            dateSearchButton.setVisibility(getView().INVISIBLE);
-            dateFromPicker.setVisibility(getView().INVISIBLE);
-            dateFromPicker2.setVisibility(getView().INVISIBLE);
-            tracksCount.setVisibility(getView().INVISIBLE);
-
+            updateButton.setVisibility(getView().INVISIBLE);
         }
 
         @Override
-        protected ArrayList<ConcertsInfo> doInBackground(Integer... parameter) {
+        protected ArrayList<ConcertsInfo> doInBackground(Void... parameter) {
 
-            if (!(artistSet.isEmpty())) {
-                //work with ponominalu
-
-                String content = null;
-                content = getAllConcerts();
-                //Get all concert's titles and id's
-                concertsId = consertsMap(content, concertsId);
-
-                //eguals artists and concerts
-
-                for (String artist : artistSet) {
-                    for (String key : concertsId.keySet()) {
-                        if (key.contains(artist)) {
-                            concertsForList.add(new ConcertsForList(artist, concertsId.get(key)));
-                            //get info
-                            try {
-                                String contentInfo;
-                                contentInfo = getEventsInfo(concertsId.get(key));
-                                concertsInfo = infoMap(contentInfo, concertsInfo);
-                                break;
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    }
+            //----Check DataBase
+            File database=getActivity().getDatabasePath("concerts.db");
+            if (!database.exists()) {
+                // Database is not Found
+                if (!(artistSet.isEmpty())) {
+                    String content = null;
+                    content = getAllConcerts();
+                    //Get all concert's titles and id's
+                    concertsId = getConcertsId(content, concertsId);
                 }
 
             }
 
+            concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
+          /*  String content = null;
+            content = getAllConcerts();
+            //Get all concert's titles and id's
+            concertsId = getConcertsId(content, concertsId);*/
+
+            try {
+                mSqLiteDatabase  = concertsDatabaseHelper.getReadableDatabase();
+            }
+            catch ( SQLiteException e) {
+                e.printStackTrace();
+            }
+
+            Cursor cursor = mSqLiteDatabase.query("concert", new String[] {ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,
+                            ConcertsDatabaseHelper.CONCERT_ID_COLUMN},
+                    null, null,
+                    null, null, null) ;
+
+            String title;
+            String idConcert;
+
+            for (String artist : artistSet) {
+                cursor.moveToFirst();
+                while (cursor.moveToNext()) {
+                    title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
+                    if (title.contains(artist)) {
+                        idConcert = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_ID_COLUMN));
+                        concertsForList.add(new ConcertsForList(artist, idConcert));
+                        //get info
+                        try {
+                            String contentInfo;
+                            contentInfo = getEventsInfo(idConcert);
+                            concertsInfo = infoMap(contentInfo, concertsInfo);
+                            break;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }
+            }
+            cursor.close();
             return concertsInfo;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... progress) {
-
-           /* if (dialogProgress != null) {
-                dialogProgress.cancel();
-            }*/
-
         }
 
         @Override
         protected void onPostExecute(ArrayList<ConcertsInfo> result) {
             super.onPostExecute(result);
+
             progress.setVisibility(View.GONE);
 
             if (!result.isEmpty()) {
-                Fragment fragment = new ItemList();
 
+                Fragment fragment = new ItemList();
                 Bundle bundle = new Bundle();
+
                 bundle.putSerializable("concertsInfo", result);
                 fragment.setArguments(bundle);
 
@@ -451,7 +361,6 @@ public class IntervalForSearching extends Fragment implements View.OnClickListen
         Uri uri = builder.build();
         String testUrl = uri.toString();
         return testUrl;
-
     }
 
 
