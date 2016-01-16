@@ -341,7 +341,6 @@ public class MainSearching extends Fragment implements View.OnClickListener {
                 id = concert.get(ConcertsForList.ID);
                 contentInfo = getEventsInfo(id);
                 concertsInfo = infoMap(contentInfo, concertsInfo);
-                // break;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -377,13 +376,14 @@ public class MainSearching extends Fragment implements View.OnClickListener {
         try {
             dataJsonObj = new JSONObject(strJson);
             JSONObject event = dataJsonObj.getJSONObject("message");
+            JSONObject place = event.getJSONObject("venue");
 
 
             concertsInfo.add(new ConcertsInfo(
                     event.getString("title").substring(7),
                     event.getString("str_date"),
                     event.getString("str_time"),
-                    event.getString("min_price"),
+                    place.getString("title"),
                     event.getString("min_price")));
 
 

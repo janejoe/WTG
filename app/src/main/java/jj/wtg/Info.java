@@ -1,6 +1,7 @@
 package jj.wtg;
 
 import android.app.Fragment;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -44,15 +45,11 @@ public class Info extends Fragment implements View.OnClickListener{
             info = (ConcertsInfo) bundle.getSerializable("concertsInfo");
         }
 
-
-
         eventTextView.setText("Кто: " + info.get(ConcertsInfo.TITLE));
         dateTextView.setText("Когда: " + info.get(ConcertsInfo.DATE));
         timeTextView.setText("Во сколько: " +info.get(ConcertsInfo.TIME));
         venueTextView.setText("Где: " +info.get(ConcertsInfo.VENUE));
         priceTextView.setText("Цена: " + info.get(ConcertsInfo.PRICE));
-
-
 
 
         addToCalendar = (Button)v.findViewById(R.id.toCalendarButton);
@@ -66,23 +63,37 @@ public class Info extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.toCalendarButton:
+                putToCalendar();
 
-                Calendar beginTime = Calendar.getInstance();
-                beginTime.set(2016, 0, 19, 7, 30);
-                Calendar endTime = Calendar.getInstance();
-                endTime.set(2016, 0, 19, 8, 30);
-                Intent intent = new Intent(Intent.ACTION_INSERT)
-                    .setData(CalendarContract.Events.CONTENT_URI)
-                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
-                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTime.getTimeInMillis())
-                    .putExtra(CalendarContract.Events.TITLE, info.get(ConcertsInfo.TITLE))
-                    .putExtra(CalendarContract.Events.DESCRIPTION, "Концерт")
-                    .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
-                    .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
-                startActivity(intent);
 
-                addToCalendar.setEnabled(false);
         }
     }
 
-}
+    private void putToCalendar (){
+        String data = info.get(ConcertsInfo.DATE);//17.02.2016,20:00
+        String time = info.get(ConcertsInfo.TIME);
+        Calendar beginTime = Calendar.getInstance();
+        beginTime.set(
+                Integer.valueOf(data.substring(6)),    //year
+                Integer.valueOf(data.substring(3, 4) + 1),//mounth
+                Integer.valueOf(data.substring(0, 2)),   // day
+                Integer.valueOf(time.substring(0, 2)),   //hh
+                Integer.valueOf(time.substring(3)));   //mm
+
+
+
+        Intent intent = new Intent(Intent.ACTION_INSERT)
+                .setData(CalendarContract.Events.CONTENT_URI)
+                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
+                .putExtra(CalendarContract.Events.TITLE, info.get(ConcertsInfo.TITLE))
+                .putExtra(CalendarContract.Events.DESCRIPTION, "Концерт")
+                .putExtra(CalendarContract.Events.EVENT_LOCATION, info.get(ConcertsInfo.VENUE))
+                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
+                .putExtra(CalendarContract.Events.HAS_ALARM, true);
+
+        startActivity(intent);
+
+    }
+
+    }
+

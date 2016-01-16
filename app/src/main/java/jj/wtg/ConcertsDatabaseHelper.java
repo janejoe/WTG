@@ -78,6 +78,7 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
             for (String key : concertsId.keySet()) {
                 if (key.contains(artist)) {
                     concertsForList.add(new ConcertsForList(artist, concertsId.get(key)));
+                    break;
 
 
                 }
@@ -90,7 +91,7 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
 
     //-----------------------------Without TREEMAP------------------------------------------------//
 
-    public ArrayList<ConcertsForList> searchWithoutTree (ConcertsDatabaseHelper db,TreeSet<String> artistSet,
+public ArrayList<ConcertsForList> searchWithoutTree (ConcertsDatabaseHelper db,TreeSet<String> artistSet,
                                                       ArrayList<ConcertsForList> concertsForList ){
 
         SQLiteDatabase mSqLiteDatabase = db.getReadableDatabase();

@@ -9,6 +9,7 @@ public class ConcertsInfo extends HashMap<String, String > {
     public static final String VENUE = "venue";
     public static final String PRICE = "price";
 
+
     public ConcertsInfo(String title, String date, String time, String venue,String price) {
         super();
         super.put(TITLE, title);
