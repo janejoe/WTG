@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -274,49 +275,14 @@ public class MainSearching extends Fragment implements View.OnClickListener {
                 }
 
             }
-
             concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
-          /*  String content = null;
-            content = getAllConcerts();
-            //Get all concert's titles and id's
-            concertsId = getConcertsId(content, concertsId);*/
 
-            try {
-                mSqLiteDatabase  = concertsDatabaseHelper.getReadableDatabase();
-            }
-            catch ( SQLiteException e) {
-                e.printStackTrace();
-            }
 
-            Cursor cursor = mSqLiteDatabase.query("concert", new String[] {ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,
-                            ConcertsDatabaseHelper.CONCERT_ID_COLUMN},
-                    null, null,
-                    null, null, null) ;
+            concertsForList =concertsDatabaseHelper.searchWithoutTree(concertsDatabaseHelper, artistSet, concertsForList);
+            //concertsForList =concertsDatabaseHelper.searchWithTree(concertsDatabaseHelper, artistSet, concertsForList);
 
-            String title;
-            String idConcert;
+            concertsInfo = fillInfoList (concertsForList);
 
-            for (String artist : artistSet) {
-                cursor.moveToFirst();
-                while (cursor.moveToNext()) {
-                    title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
-                    if (title.contains(artist)) {
-                        idConcert = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_ID_COLUMN));
-                        concertsForList.add(new ConcertsForList(artist, idConcert));
-                        //get info
-                        try {
-                            String contentInfo;
-                            contentInfo = getEventsInfo(idConcert);
-                            concertsInfo = infoMap(contentInfo, concertsInfo);
-                            break;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                }
-            }
-            cursor.close();
             return concertsInfo;
         }
 
@@ -363,6 +329,26 @@ public class MainSearching extends Fragment implements View.OnClickListener {
         return testUrl;
     }
 
+    private ArrayList<ConcertsInfo> fillInfoList (ArrayList<ConcertsForList> concertsForList){
+
+        ConcertsForList concert;
+        String id;
+
+       for (int i=0; i<concertsForList.size(); i++){
+            try {
+                String contentInfo;
+                concert = concertsForList.get(i);
+                id = concert.get(ConcertsForList.ID);
+                contentInfo = getEventsInfo(id);
+                concertsInfo = infoMap(contentInfo, concertsInfo);
+                // break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return concertsInfo;
+
+        }
 
     private String getEventsInfo(String eventId) throws ParseException {
         String testUrl = null;
