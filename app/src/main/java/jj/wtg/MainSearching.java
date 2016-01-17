@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.vk.sdk.api.VKApi;
@@ -68,15 +69,13 @@ public class MainSearching extends Fragment implements View.OnClickListener {
     private Button updateButton;
     ProgressBar progress;
 
-    private Map<String, String> concertsId = new TreeMap<>();
-    private TreeSet<String> artistSet= new TreeSet<>();
 
+    private TreeSet<String> artistSet = new TreeSet<>();
     private ArrayList<ConcertsForList> concertsForList = new ArrayList<>();
     private ArrayList<ConcertsInfo> concertsInfo = new ArrayList<>();
 
     private ConcertsDatabaseHelper concertsDatabaseHelper;
-    private SQLiteDatabase mSqLiteDatabase;
-
+    private ParsePonominalu parsePonominalu;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,10 +93,17 @@ public class MainSearching extends Fragment implements View.OnClickListener {
         return v;
     }
 
-    private void font() {
-        Typeface type2 = Typeface.createFromAsset(getActivity().getAssets(), RepeatData.TYPEFONT);
-        search.setTypeface(type2);
-        updateButton.setTypeface(type2);
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.dateSearchButton:
+                //update
+                break;
+
+            case R.id.searchButton:
+                artistSet = getArtistSet();
+                break;
+        }
     }
 
     private TreeSet getArtistSet() {
@@ -140,117 +146,6 @@ public class MainSearching extends Fragment implements View.OnClickListener {
         });
         return artistSet;
     }
-    //--------------------Build url for request----------------------------------------
-
-    String getUrlPonominalu() throws URISyntaxException {
-        Date date = new Date();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-
-
-        Uri.Builder builder = new Uri.Builder();
-        builder.scheme("http")
-                .authority("api.cultserv.ru")
-                .appendPath("/jtransport/iphone/get_events")
-                .appendQueryParameter("category", "10")
-                .appendQueryParameter("min_date", df.format(date))
-                .appendQueryParameter("one_for_event", "true")
-                .appendQueryParameter("region_id", "1")
-                .appendQueryParameter("session", "123")
-                .appendQueryParameter("exclude", "image,link,address,original_image,venue,slide," +
-                        "tags,date,dates,has_offer,str_date,str_time,event,min_price,max_price," +
-                        "ticket_count,eticket_possible,end_date,categories_ids,type,split_titles," +
-                        "add_title");
-        Uri uri = builder.build();
-        String testUrl = uri.toString();
-        return testUrl;
-    }
-
-    StringBuilder getContent(URL url, StringBuilder content) {
-        try {
-            URLConnection urlConnection = url.openConnection();
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(urlConnection.getInputStream()));
-
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                content.append(line + "\n");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return content;
-    }
-
-    private String getAllConcerts() throws ParseException {
-        String testUrl = null;
-        URL url = null; // Get URL
-
-        try {
-            testUrl = getUrlPonominalu();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        try {
-            url = new URL(testUrl);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        // Get Content
-        StringBuilder content = new StringBuilder();
-        content = getContent(url, content);
-        return content.toString();
-    }
-
-    //-------------------------------Fill DataBase With Concerts ID---------------------------------
-
-    private Map getConcertsId (String strJson, Map<String, String> concertsId) {
-        JSONObject dataJsonObj = null;
-        concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
-        mSqLiteDatabase  = concertsDatabaseHelper.getReadableDatabase();
-
-        try {
-            dataJsonObj = new JSONObject(strJson);
-            JSONArray events = dataJsonObj.getJSONArray("message");
-
-            // Get all concerts into hashmap with id and title
-            for (int i = 0; i < events.length(); i++) {
-                JSONObject event = events.getJSONObject(i);
-                concertsId.put(event.getString("title").substring(7), event.getString("id"));
-            }
-
-            ContentValues newValues = new ContentValues();
-            // Задайте значения для каждого столбца
-            for (String key : concertsId.keySet()) {
-                newValues.put(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,  key);
-                newValues.put(ConcertsDatabaseHelper.CONCERT_ID_COLUMN, concertsId.get(key));
-                // Вставляем данные в таблицу
-                mSqLiteDatabase.insert("concert", null, newValues);
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return concertsId;
-    }
-
-//----------------------------------------------------------
-
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.dateSearchButton:
-               //update
-                break;
-
-            case R.id.searchButton:
-                artistSet = getArtistSet();
-                break;
-        }
-    }
 
     private class ScanAsyncTask extends AsyncTask<Void, Void, ArrayList<ConcertsInfo>> {
         @Override
@@ -263,33 +158,34 @@ public class MainSearching extends Fragment implements View.OnClickListener {
         @Override
         protected ArrayList<ConcertsInfo> doInBackground(Void... parameter) {
 
+            parsePonominalu = new ParsePonominalu();
+
             //----Check DataBase
-            File database=getActivity().getDatabasePath("concerts.db");
+            File database = getActivity().getDatabasePath("concerts.db");
             if (!database.exists()) {
                 // Database is not Found
                 if (!(artistSet.isEmpty())) {
                     String content = null;
-                    content = getAllConcerts();
+                    content = parsePonominalu.getAllConcerts();
                     //Get all concert's titles and id's
-                    concertsId = getConcertsId(content, concertsId);
+                    concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
+                    concertsDatabaseHelper.getConcertsId(content, concertsDatabaseHelper);
                 }
-
             }
-            concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
+            else {
+                concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
+            }
 
-
-            concertsForList =concertsDatabaseHelper.searchWithoutTree(concertsDatabaseHelper, artistSet, concertsForList);
+            concertsForList = concertsDatabaseHelper.searchWithoutTree(concertsDatabaseHelper, artistSet, concertsForList);
             //concertsForList =concertsDatabaseHelper.searchWithTree(concertsDatabaseHelper, artistSet, concertsForList);
 
-            concertsInfo = fillInfoList (concertsForList);
-
+            concertsInfo = parsePonominalu.fillInfoList(concertsForList, concertsInfo);
             return concertsInfo;
         }
 
         @Override
         protected void onPostExecute(ArrayList<ConcertsInfo> result) {
             super.onPostExecute(result);
-
             progress.setVisibility(View.GONE);
 
             if (!result.isEmpty()) {
@@ -302,98 +198,15 @@ public class MainSearching extends Fragment implements View.OnClickListener {
 
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.frameContent, fragment).addToBackStack("tag").commit();
-            }
+            } else
+                Toast.makeText(getActivity(), getString(R.string.notFound), Toast.LENGTH_LONG).show();
         }
     }
 
-    //Build url for request
-    String getInfoUrl(String eventId) throws URISyntaxException {
-        Uri.Builder builder = new Uri.Builder();
-        builder.scheme("http")
-                .authority("api.cultserv.ru")
-                .appendPath("/jtransport/iphone/get_subevent")
-                .appendQueryParameter("id", eventId)
-                .appendQueryParameter("session", "123")
-                .appendQueryParameter("exclude","id,description,eng_title,title_roditelniy," +
-                        "title_datelniy,title_vinitelniy,title_tvoritelniy,title_predlozhniy,date," +
-                        "image,original_image,events,alias,marker,region_id,metro,del_price,zoom," +
-                        "central_kassa,priority,production_url,show_3d,event_id,event,max_price," +
-                        "slide,ticket_count,eticket_possible,eticket_only,credit_card_payment,tags," +
-                        "sectors,desc_hash,categories,categories_ids,metaDescription,mini_slide," +
-                        "slide_mask,wishdate,city_required,type,age,link,et_rep_sending_time_long," +
-                        "without_check,without_check_on_venue_kassa,without_check_on_central_desk," +
-                        "without_check_on_delivery,has_offer,moderated,ticketCount,commission," +
-                        "int_type,sold_out,show_begin_date,split_titles,company,meropriyatie_id");
-        Uri uri = builder.build();
-        String testUrl = uri.toString();
-        return testUrl;
+    private void font() {
+        Typeface type2 = Typeface.createFromAsset(getActivity().getAssets(), RepeatData.TYPEFONT);
+        search.setTypeface(type2);
+        updateButton.setTypeface(type2);
     }
-
-    private ArrayList<ConcertsInfo> fillInfoList (ArrayList<ConcertsForList> concertsForList){
-
-        ConcertsForList concert;
-        String id;
-
-       for (int i=0; i<concertsForList.size(); i++){
-            try {
-                String contentInfo;
-                concert = concertsForList.get(i);
-                id = concert.get(ConcertsForList.ID);
-                contentInfo = getEventsInfo(id);
-                concertsInfo = infoMap(contentInfo, concertsInfo);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return concertsInfo;
-
-        }
-
-    private String getEventsInfo(String eventId) throws ParseException {
-        String testUrl = null;
-        URL url = null; // Get URL
-
-        try {
-            testUrl = getInfoUrl(eventId);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        try {
-            url = new URL(testUrl);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        // Get Content
-        StringBuilder content = new StringBuilder();
-        content = getContent(url, content);
-        return content.toString();
-    }
-
-    private ArrayList<ConcertsInfo>  infoMap(String strJson, ArrayList<ConcertsInfo> concertsInfo) {
-        JSONObject dataJsonObj = null;
-
-        try {
-            dataJsonObj = new JSONObject(strJson);
-            JSONObject event = dataJsonObj.getJSONObject("message");
-            JSONObject place = event.getJSONObject("venue");
-
-
-            concertsInfo.add(new ConcertsInfo(
-                    event.getString("title").substring(7),
-                    event.getString("str_date"),
-                    event.getString("str_time"),
-                    place.getString("title"),
-                    event.getString("min_price")));
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return concertsInfo;
-    }
-
-    }
-
+}
 

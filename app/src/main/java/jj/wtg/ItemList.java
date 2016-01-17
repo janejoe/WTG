@@ -29,7 +29,7 @@ public class ItemList  extends Fragment {
         if (bundle != null) {
             concertsInfo = (ArrayList<ConcertsInfo>) bundle.getSerializable("concertsInfo");
         }
-        else Toast.makeText(getActivity(), "Мероприятий не найдено", Toast.LENGTH_SHORT).show();
+        else Toast.makeText(getActivity(), getString(R.string.notFound), Toast.LENGTH_SHORT).show();
 
 
         ListAdapter adapter = new SimpleAdapter(getActivity(), concertsInfo, R.layout.list_item,

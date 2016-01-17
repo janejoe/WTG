@@ -1,11 +1,16 @@
 package jj.wtg;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -88,17 +93,16 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
         return concertsForList;
     }
 
-
     //-----------------------------Without TREEMAP------------------------------------------------//
 
-public ArrayList<ConcertsForList> searchWithoutTree (ConcertsDatabaseHelper db,TreeSet<String> artistSet,
+    public ArrayList<ConcertsForList> searchWithoutTree (ConcertsDatabaseHelper db,TreeSet<String> artistSet,
                                                       ArrayList<ConcertsForList> concertsForList ){
 
         SQLiteDatabase mSqLiteDatabase = db.getReadableDatabase();
-        Cursor cursor = mSqLiteDatabase.query("concert", new String[] {ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,
-                            ConcertsDatabaseHelper.CONCERT_ID_COLUMN},
-                    null, null,
-                    null, null, null) ;
+        Cursor cursor = mSqLiteDatabase.query("concert", new String[]{ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,
+                        ConcertsDatabaseHelper.CONCERT_ID_COLUMN},
+                null, null,
+                null, null, null) ;
 
         String title;
         String idConcert;
@@ -115,6 +119,39 @@ public ArrayList<ConcertsForList> searchWithoutTree (ConcertsDatabaseHelper db,T
             }
             cursor.close();
         return concertsForList;
+    }
+
+//-------------------------------Fill DataBase With Concerts ID---------------------------------
+
+     void getConcertsId (String strJson,
+                               ConcertsDatabaseHelper concertsDatabaseHelper) {
+        Map<String, String> concertsId = new TreeMap<>();
+        JSONObject dataJsonObj = null;
+         SQLiteDatabase mSqLiteDatabase = concertsDatabaseHelper.getReadableDatabase();
+
+        try {
+            dataJsonObj = new JSONObject(strJson);
+            JSONArray events = dataJsonObj.getJSONArray("message");
+
+            // Get all concerts into hashmap with id and title
+            for (int i = 0; i < events.length(); i++) {
+                JSONObject event = events.getJSONObject(i);
+                concertsId.put(event.getString("title").substring(7), event.getString("id"));
+            }
+
+            ContentValues newValues = new ContentValues();
+            // Задайте значения для каждого столбца
+            for (String key : concertsId.keySet()) {
+                newValues.put(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,  key);
+                newValues.put(ConcertsDatabaseHelper.CONCERT_ID_COLUMN, concertsId.get(key));
+                // Вставляем данные в таблицу
+                mSqLiteDatabase.insert("concert", null, newValues);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 }
 

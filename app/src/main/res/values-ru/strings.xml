@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WTG</string>
+    <string name="wtg">Where To Go?</string>
+    <integer name="com_vk_sdk_AppId">5142452</integer>
+
+    <string name="updateButton">ОБНОВИТЬ</string>
+    <string name="searchButton">НАЧАТЬ ПОИСК</string>
+    <string name="notFound">КОНЦЕРТОВ НЕ НАЙДЕНО</string>
+    <string name="addToCalendar">ДОБАВИТЬ В КАЛЕНДАРЬ</string>
+
+    <string name="who">КТО: </string>
+    <string name="date">КОГДА: </string>
+    <string name="time">ВО СКОЛЬКО: </string>
+    <string name="venue">ГДЕ: </string>
+    <string name="price">ЦЕНА: </string>
+    <string name="concert">Концерт </string>
+
+
+    
+</resources>

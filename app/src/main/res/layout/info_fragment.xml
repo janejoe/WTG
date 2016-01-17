@@ -17,7 +17,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginTop="150dp"
             android:text="Title"
-            android:textSize="35sp"
+            android:textSize="25sp"
             android:id="@+id/eventTextView" />
 
         <TextView
@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="Date"
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/dateTextView" />
 
         <TextView
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="Time"
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/timeTextView" />
 
         <TextView
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="Venue"
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/venueInfoTextView" />
 
         <TextView
@@ -49,16 +49,17 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="Price"
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/priceTextView" />
 
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Добавить в календарь"
+            android:text="@string/addToCalendar"
             android:id="@+id/toCalendarButton"
             android:layout_marginTop="10dp"
-            android:background="#283140a0"
+            android:textColor="#fff"
+            android:background="@color/colorPrimary"
             android:enabled="true"
             android:layout_gravity="bottom" />
     </LinearLayout>

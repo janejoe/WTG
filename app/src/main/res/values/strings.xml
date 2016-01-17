@@ -1,17 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WTG</string>
     <string name="wtg">Where To Go?</string>
     <integer name="com_vk_sdk_AppId">5142452</integer>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
 
-    <string name="progress_audio">Сканирую аудио</string>
-    <string name="progress_concert">Ищу концерты</string>
+    <string name="updateButton">UPDATE</string>
+    <string name="searchButton">SEARCH</string>
+    <string name="notFound">NO CONCERTS</string>
+    <string name="addToCalendar">ADD TO CALENDAR</string>
 
-    <string-array name="number_of_audio">
-        <item>100</item>
-        <item>200</item>
-        <item>300</item>
-        <item>Все</item>
-    </string-array>
+    <string name="who">WHO: </string>
+    <string name="date">DATE: </string>
+    <string name="time">TIME: </string>
+    <string name="venue">VENUE: </string>
+    <string name="price">PLACE: </string>
+
 </resources>

@@ -3,6 +3,7 @@ package jj.wtg;
 import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -22,12 +23,8 @@ import java.util.GregorianCalendar;
 public class Info extends Fragment implements View.OnClickListener{
 
     Button addToCalendar;
-    TextView eventTextView;
-    TextView dateTextView;
-    TextView timeTextView;
-    TextView venueTextView;
-    TextView priceTextView;
-    ConcertsInfo info;
+    private ConcertsInfo info;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,19 +42,20 @@ public class Info extends Fragment implements View.OnClickListener{
             info = (ConcertsInfo) bundle.getSerializable("concertsInfo");
         }
 
-        eventTextView.setText("Кто: " + info.get(ConcertsInfo.TITLE));
-        dateTextView.setText("Когда: " + info.get(ConcertsInfo.DATE));
-        timeTextView.setText("Во сколько: " +info.get(ConcertsInfo.TIME));
-        venueTextView.setText("Где: " +info.get(ConcertsInfo.VENUE));
-        priceTextView.setText("Цена: " + info.get(ConcertsInfo.PRICE));
+        eventTextView.setText(getString(R.string.who) + "  " + info.get(ConcertsInfo.TITLE).toUpperCase());
+        dateTextView.setText(getString(R.string.date) + "  " + info.get(ConcertsInfo.DATE).toUpperCase());
+        timeTextView.setText(getString(R.string.time) + "  " + info.get(ConcertsInfo.TIME).toUpperCase());
+        venueTextView.setText(getString(R.string.venue) + "  " + info.get(ConcertsInfo.VENUE).toUpperCase());
+        priceTextView.setText(getString(R.string.price) + "  " + info.get(ConcertsInfo.PRICE));
 
 
         addToCalendar = (Button)v.findViewById(R.id.toCalendarButton);
-
         addToCalendar.setOnClickListener(this);
+
 
         return v;
     }
+
 
     @Override
     public void onClick(View v) {
@@ -81,12 +79,11 @@ public class Info extends Fragment implements View.OnClickListener{
                 Integer.valueOf(time.substring(3)));   //mm
 
 
-
         Intent intent = new Intent(Intent.ACTION_INSERT)
                 .setData(CalendarContract.Events.CONTENT_URI)
                 .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
                 .putExtra(CalendarContract.Events.TITLE, info.get(ConcertsInfo.TITLE))
-                .putExtra(CalendarContract.Events.DESCRIPTION, "Концерт")
+                .putExtra(CalendarContract.Events.DESCRIPTION, getString(R.string.concert))
                 .putExtra(CalendarContract.Events.EVENT_LOCATION, info.get(ConcertsInfo.VENUE))
                 .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
                 .putExtra(CalendarContract.Events.HAS_ALARM, true);
@@ -94,6 +91,8 @@ public class Info extends Fragment implements View.OnClickListener{
         startActivity(intent);
 
     }
+
+
 
     }
 

@@ -9,7 +9,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ОБНОВИТЬ"
+        android:text="@string/updateButton"
         android:id="@+id/dateSearchButton"
         android:layout_marginTop="20dp"
         android:textColor="#fff"
@@ -19,7 +19,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Начать поиск"
+        android:text="@string/searchButton"
         android:id="@+id/searchButton"
         android:layout_marginTop="50dp"
         android:textColor="#fff"
