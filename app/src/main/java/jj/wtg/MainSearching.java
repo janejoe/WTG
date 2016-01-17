@@ -86,6 +86,7 @@ public class MainSearching extends Fragment implements View.OnClickListener {
         updateButton = (Button) v.findViewById(R.id.dateSearchButton);
         progress = (ProgressBar) v.findViewById(R.id.progress);
 
+        updateButton.setEnabled(false);
         search.setOnClickListener(this);
         updateButton.setOnClickListener(this);
         font();

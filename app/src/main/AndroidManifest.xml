@@ -20,6 +20,7 @@
         android:name=".Application"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
+
         <activity android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,6 +32,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD-sU4CN0ZD-ykCySZ0fmq8uu7E12rPXfM"/>
+
+        <receiver android:name=".AlarmReceiver"></receiver>
 
     </application>
 

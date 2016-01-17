@@ -20,7 +20,7 @@ import java.util.TreeSet;
 
 public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "concerts.db";
-    private static final int DATABASE_VERSION = 1;
+    static final int DATABASE_VERSION = 8;
 
     private static final String DATABASE_TABLE = "concert";
     public static final String CONCERT_TITLE_COLUMN = "title_concert";
@@ -99,6 +99,7 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
                                                       ArrayList<ConcertsForList> concertsForList ){
 
         SQLiteDatabase mSqLiteDatabase = db.getReadableDatabase();
+
         Cursor cursor = mSqLiteDatabase.query("concert", new String[]{ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,
                         ConcertsDatabaseHelper.CONCERT_ID_COLUMN},
                 null, null,
@@ -117,7 +118,7 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
                     }
                 }
             }
-            cursor.close();
+        cursor.close();
         return concertsForList;
     }
 
@@ -128,6 +129,7 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
         Map<String, String> concertsId = new TreeMap<>();
         JSONObject dataJsonObj = null;
          SQLiteDatabase mSqLiteDatabase = concertsDatabaseHelper.getReadableDatabase();
+
 
         try {
             dataJsonObj = new JSONObject(strJson);

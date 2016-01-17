@@ -2,11 +2,8 @@ package jj.wtg;
 
 import android.net.ParseException;
 import android.net.Uri;
-
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
