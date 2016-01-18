@@ -102,6 +102,8 @@ public class MainSearching extends Fragment implements View.OnClickListener {
                 break;
 
             case R.id.searchButton:
+                search.setEnabled(false);
+                search.setAlpha((float) 0.5);
                 artistSet = getArtistSet();
                 break;
         }
@@ -122,6 +124,8 @@ public class MainSearching extends Fragment implements View.OnClickListener {
                     com.vk.sdk.api.model.VKApiAudio vkApiAudio = ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).get(i);
                     artistSet.add(vkApiAudio.artist);
                 }
+
+
                 try {
                     new ScanAsyncTask().execute();
 

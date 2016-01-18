@@ -53,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
+
+
+
         Fragment fragment = new MainSearching();
 
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
