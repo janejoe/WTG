@@ -4,7 +4,7 @@
     <string name="wtg">Where To Go?</string>
     <integer name="com_vk_sdk_AppId">5142452</integer>
 
-    <string name="updateButton">ОБНОВИТЬ</string>
+    <string name="updateButton">НАСТРОЙКИ</string>
     <string name="searchButton">НАЧАТЬ ПОИСК</string>
     <string name="notFound">КОНЦЕРТОВ НЕ НАЙДЕНО</string>
     <string name="addToCalendar">ДОБАВИТЬ В КАЛЕНДАРЬ</string>

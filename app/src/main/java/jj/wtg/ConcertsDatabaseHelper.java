@@ -5,13 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.provider.BaseColumns;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,13 +22,18 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 
+
 public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "concerts.db";
-    static final int DATABASE_VERSION = 8;
+    static final int DATABASE_VERSION = 1;
 
     private static final String DATABASE_TABLE = "concert";
     public static final String CONCERT_TITLE_COLUMN = "title_concert";
     public static final String CONCERT_ID_COLUMN = "id_concert";
+
+    public static int indEng;
+    public static int indRus;
+
 
 
     private static final String DATABASE_CREATE_SCRIPT = "create table "
@@ -97,7 +105,8 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
     //-----------------------------Without TREEMAP------------------------------------------------//
 
     public ArrayList<ConcertsForList> searchWithoutTree (ConcertsDatabaseHelper db,TreeSet<String> artistSet,
-                                                      ArrayList<ConcertsForList> concertsForList ) {
+                                                      ArrayList<ConcertsForList> concertsForList,
+                                                         int eng,int rus) {
 
         SQLiteDatabase mSqLiteDatabase = db.getReadableDatabase();
 
@@ -106,7 +115,9 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
                 null, null,
                 null, null, null);
 
-        concertsForList = hardSearch(cursor, artistSet, concertsForList);
+
+            concertsForList = hardSearch(cursor, artistSet, concertsForList,eng,rus);
+
         //concertsForList = simpleSearch( cursor, artistSet, concertsForList);
 
         return concertsForList;
@@ -131,6 +142,8 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
                 concertsId.put(event.getString("title").substring(7), event.getString("id"));
             }
 
+
+
             ContentValues newValues = new ContentValues();
             // Задайте значения для каждого столбца
             for (String key : concertsId.keySet()) {
@@ -140,8 +153,45 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
                 mSqLiteDatabase.insert("concert", null, newValues);
             }
 
+            findID(mSqLiteDatabase);
+
+
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+
+    }
+    //-------------------------------Find RUS and ENG indexes in DB---------------------------------
+    void findID (SQLiteDatabase mSqLiteDatabase){
+        Cursor cursor = mSqLiteDatabase.query("concert", new String[] {ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN,
+                        ConcertsDatabaseHelper.CONCERT_ID_COLUMN},
+                null, null,
+                null, null, null) ;
+
+        cursor.moveToFirst();
+        String title;
+        indEng=0;
+        indRus=0;
+
+        while (cursor.moveToNext()) {
+            title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
+            if ( !title.startsWith("A")){
+                indEng++;
+            }
+            else {
+                //indRus=indEng;
+                break;
+            }
+        }
+
+        while (cursor.moveToNext()) {
+            title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
+            if ( !title.startsWith("А")){
+                indRus++;
+            }
+            else {
+                break;
+            }
         }
 
     }
@@ -168,51 +218,23 @@ public class ConcertsDatabaseHelper extends SQLiteOpenHelper {
     }
 
     ArrayList<ConcertsForList> hardSearch (Cursor cursor,TreeSet<String> artistSet,
-                                           ArrayList<ConcertsForList> concertsForList){
+                                           ArrayList<ConcertsForList> concertsForList,
+                                           int eng, int rus)  {
 
 
         String title;
         String idConcert;
 
-
-
-        artistSet.add("AAA");
+        artistSet.add("A  ");
         artistSet.add("ААА");
-        artistSet.add("0000");
-/* int indEng=0;
-int indRus=0;
-cursor.moveToFirst();
+        artistSet.add("   ");
 
-while (cursor.moveToNext()) {
-title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
-if ( !title.startsWith("A")){
-indEng++;
-
-}
-else {
-indRus=indEng;
-break;
-}
-}
-
-while (cursor.moveToNext()) {
-title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
-if ( !title.startsWith("А")){
-indRus++;
-}
-else {
-break;
-}
-}
-*/
-        int indEng = 6;
-        int indRus = 203;
 
         int engArt=0;
         int rusArt=0;
 
         for (String art: artistSet){
-            if ( !art.equals("AAA")){
+            if ( !art.equals("A  ")){
                 engArt++;
             }
             else break;
@@ -225,15 +247,14 @@ break;
         }
 
 
-
         Iterator<String> iterator = artistSet.iterator();
         String artist;
 
 
-        for (int i=0; i != engArt; i++) {// исполнитель до англ включительно
+        for (int i=1; i != engArt; i++) {// исполнитель до англ включительно
             cursor.moveToFirst();
             artist = iterator.next().toString();
-            for (int k = 0; k < indEng; k++){//концерты до англ
+            for (int k = 0; k < eng+1; k++){//концерты до англ
                 title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
                 if (title.contains(artist )) {// если концерт содержит артиста, сохраняем
                     idConcert = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_ID_COLUMN));
@@ -248,8 +269,8 @@ break;
         for (int i=0; i != rusArt; i++) {// исполнитель до рус включительно
             artist = iterator.next().toString();
             cursor.moveToFirst();
-            cursor.move(indEng); // сдвигаемся по бд до первого слова после английского AAA
-            for (int k = 0; k < indRus; k++){//концерты до рус
+            cursor.move(eng+1); // сдвигаемся по бд до первого слова после английского AAA
+            for (int k = 0; k < rus+1; k++){//концерты до рус
                 title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
                 if (title.contains(artist )) {// если концерт содержит артиста, сохраняем
                     idConcert = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_ID_COLUMN));
@@ -261,9 +282,9 @@ break;
             }
         }
 
-        while ( iterator.hasNext()) {// русккий исполнитель
+        while ( iterator.hasNext()) {// руский исполнитель
             cursor.moveToFirst();
-            cursor.move(indRus); // сдвигаемся по бд до первого слова после русского AAA
+            cursor.move(rus+3); // сдвигаемся по бд до первого слова после русского AAA
             artist = iterator.next().toString();
             while (cursor.moveToNext()) {//концерты до конца
                 title = cursor.getString(cursor.getColumnIndex(ConcertsDatabaseHelper.CONCERT_TITLE_COLUMN));
@@ -277,8 +298,6 @@ break;
         return concertsForList;
 
     }
-
-
 
 }
 

@@ -1,29 +1,18 @@
 package jj.wtg;
 
-import android.app.Dialog;
+
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.net.ParseException;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.ProgressBar;
-
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -36,31 +25,9 @@ import com.vk.sdk.api.VKResponse;
 
 import com.vk.sdk.api.model.VKList;
 
-
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class MainSearching extends Fragment implements View.OnClickListener {
@@ -77,10 +44,14 @@ public class MainSearching extends Fragment implements View.OnClickListener {
     private ConcertsDatabaseHelper concertsDatabaseHelper;
     private ParsePonominalu parsePonominalu;
 
+    private SharedPreferences mSettings;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.interval_fragment, container, false);
+        mSettings = getActivity().getSharedPreferences(MainActivity.APP_PREFERENCES, Context.MODE_PRIVATE);
 
         search = (Button) v.findViewById(R.id.searchButton);
         updateButton = (Button) v.findViewById(R.id.dateSearchButton);
@@ -122,7 +93,10 @@ public class MainSearching extends Fragment implements View.OnClickListener {
                 super.onComplete(response);
                 for (int i = 0; i < ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).size(); i++) {
                     com.vk.sdk.api.model.VKApiAudio vkApiAudio = ((VKList<com.vk.sdk.api.model.VKApiAudio>) response.parsedModel).get(i);
-                    artistSet.add(vkApiAudio.artist);
+                    if (vkApiAudio.artist.startsWith(" "))
+                        artistSet.add(vkApiAudio.artist.substring(1));
+                    else
+                        artistSet.add(vkApiAudio.artist);
                 }
 
 
@@ -173,16 +147,22 @@ public class MainSearching extends Fragment implements View.OnClickListener {
                     String content = null;
                     content = parsePonominalu.getAllConcerts();
                     //Get all concert's titles and id's
-                    concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
+                    concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 1);
                     concertsDatabaseHelper.getConcertsId(content, concertsDatabaseHelper);
+
                 }
             }
             else {
-                concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 8);
-            }
+                concertsDatabaseHelper = new ConcertsDatabaseHelper(getActivity(), "concerts.db", null, 1);
 
-            concertsForList = concertsDatabaseHelper.searchWithoutTree(concertsDatabaseHelper, artistSet, concertsForList);
-            //concertsForList =concertsDatabaseHelper.searchWithTree(concertsDatabaseHelper, artistSet, concertsForList);
+            }
+            int eng = mSettings.getInt(MainActivity.APP_PREFERENCES_ENG_IND,
+                    ConcertsDatabaseHelper.indEng);
+            int rus = mSettings.getInt(MainActivity.APP_PREFERENCES_RUS_IND,
+                    ConcertsDatabaseHelper.indRus);
+
+            concertsForList = concertsDatabaseHelper.searchWithoutTree(concertsDatabaseHelper, artistSet, concertsForList,
+                    eng,rus);
 
             concertsInfo = parsePonominalu.fillInfoList(concertsForList, concertsInfo);
             return concertsInfo;

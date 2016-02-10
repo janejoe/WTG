@@ -29,6 +29,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_PREFERENCES = "my_settings";
     public static final String APP_PREFERENCES_DB_VERSION = "db_version";
     public static final String APP_PREFERENCES_START_DATE = "start_date";
+    public static final String APP_PREFERENCES_ENG_IND = "eng_id";
+    public static final String APP_PREFERENCES_RUS_IND = "rus_id";
+
+
     private SharedPreferences mSettings;
 
     @Override
@@ -51,10 +55,6 @@ public class MainActivity extends AppCompatActivity {
         if (toolbar != null) {
             setSupportActionBar(toolbar);
         }
-
-
-
-
 
 
         Fragment fragment = new MainSearching();
@@ -107,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor editor =mSettings.edit();
             editor.putLong(APP_PREFERENCES_START_DATE, System.currentTimeMillis());
             editor.putInt(APP_PREFERENCES_DB_VERSION, ConcertsDatabaseHelper.DATABASE_VERSION);
+            editor.putInt(APP_PREFERENCES_ENG_IND, ConcertsDatabaseHelper.indEng);
+            editor.putInt(APP_PREFERENCES_RUS_IND, ConcertsDatabaseHelper.indRus);
             editor.apply();
             startAlarm(mSettings.getLong(APP_PREFERENCES_START_DATE,System.currentTimeMillis() ));
         }

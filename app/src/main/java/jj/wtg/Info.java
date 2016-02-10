@@ -42,7 +42,7 @@ public class Info extends Fragment implements View.OnClickListener{
             info = (ConcertsInfo) bundle.getSerializable("concertsInfo");
         }
 
-        eventTextView.setText(getString(R.string.who) + "  " + info.get(ConcertsInfo.TITLE).toUpperCase());
+        eventTextView.setText(info.get(ConcertsInfo.TITLE).toUpperCase());
         dateTextView.setText(getString(R.string.date) + "  " + info.get(ConcertsInfo.DATE).toUpperCase());
         timeTextView.setText(getString(R.string.time) + "  " + info.get(ConcertsInfo.TIME).toUpperCase());
         venueTextView.setText(getString(R.string.venue) + "  " + info.get(ConcertsInfo.VENUE).toUpperCase());
@@ -68,12 +68,12 @@ public class Info extends Fragment implements View.OnClickListener{
     }
 
     private void putToCalendar (){
-        String data = info.get(ConcertsInfo.DATE);//17.02.2016,20:00
+        String data = info.get(ConcertsInfo.DATE);//21.04.2016,20:00
         String time = info.get(ConcertsInfo.TIME);
         Calendar beginTime = Calendar.getInstance();
         beginTime.set(
                 Integer.valueOf(data.substring(6)),    //year
-                Integer.valueOf(data.substring(3, 4) + 1),//mounth
+                Integer.valueOf(data.substring(3, 5))-1,//mounth
                 Integer.valueOf(data.substring(0, 2)),   // day
                 Integer.valueOf(time.substring(0, 2)),   //hh
                 Integer.valueOf(time.substring(3)));   //mm

@@ -42,8 +42,12 @@ public class AlarmReceiver extends BroadcastReceiver {
                     concertsDatabaseHelper.getConcertsId(content, concertsDatabaseHelper);
 
                     //edit SharedPreferences
-                    SharedPreferences.Editor editor =settings.edit();
+
+
+                    SharedPreferences.Editor editor = settings.edit();
                     editor.putInt(MainActivity.APP_PREFERENCES_DB_VERSION, old_version+1);
+                    editor.putInt(MainActivity.APP_PREFERENCES_ENG_IND, ConcertsDatabaseHelper.indEng);
+                    editor.putInt(MainActivity.APP_PREFERENCES_RUS_IND, ConcertsDatabaseHelper.indRus);
                     editor.apply();
                                     }
                 break;

@@ -17,8 +17,12 @@
             android:layout_marginLeft="20dp"
             android:layout_marginTop="150dp"
             android:text="Title"
-            android:textSize="25sp"
-            android:id="@+id/eventTextView" />
+            android:textSize="30sp"
+            android:id="@+id/eventTextView"
+            android:background="#e5e6ed"
+            android:layout_marginRight="20dp"
+            android:textColor="#4052b5"
+            android:textAlignment="center" />
 
         <TextView
             android:layout_width="match_parent"
@@ -26,7 +30,8 @@
             android:layout_marginLeft="20dp"
             android:text="Date"
             android:textSize="20sp"
-            android:id="@+id/dateTextView" />
+            android:id="@+id/dateTextView"
+            android:layout_marginRight="20dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -34,7 +39,9 @@
             android:layout_marginLeft="20dp"
             android:text="Time"
             android:textSize="20sp"
-            android:id="@+id/timeTextView" />
+            android:id="@+id/timeTextView"
+            android:background="#e5e6ed"
+            android:layout_marginRight="20dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -42,7 +49,8 @@
             android:layout_marginLeft="20dp"
             android:text="Venue"
             android:textSize="20sp"
-            android:id="@+id/venueInfoTextView" />
+            android:id="@+id/venueInfoTextView"
+            android:layout_marginRight="20dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -50,7 +58,10 @@
             android:layout_marginLeft="20dp"
             android:text="Price"
             android:textSize="20sp"
-            android:id="@+id/priceTextView" />
+            android:id="@+id/priceTextView"
+            android:background="#e5e6ed"
+            android:autoText="true"
+            android:layout_marginRight="20dp" />
 
         <Button
             android:layout_width="fill_parent"
@@ -61,7 +72,9 @@
             android:textColor="#fff"
             android:background="@color/colorPrimary"
             android:enabled="true"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp" />
     </LinearLayout>
 
 </LinearLayout>
